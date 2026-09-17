@@ -21,8 +21,8 @@ models and their `sample()` methods inside `model.py`.
 
 **Evaluation:** FID scores from two independent model checkpoints:
 
-- `model_one_nfe`: exactly one model function evaluation
-- `model_few_nfe`: at most four model function evaluations
+- `ModelOneNFE`: exactly one model function evaluation
+- `ModelFewNFE`: at most four model function evaluations
 
 Each category is evaluated with exactly 20 generated images.
 
@@ -42,8 +42,8 @@ machine if a CUDA-specific build is required.
 ## Project Structure
 
 ```text
-AIC313-CS378-Project-FastGen/
-├── model.py                         # NFE-specific models and checkpoint loading (students SHOULD modify)
+AIC313-Project-FastGen/
+├── model.py                         # NFE-specific model classes (students SHOULD modify subclasses)
 ├── dataset.py                       # Pokemon dataset and DataLoader API (provided, DO NOT modify)
 ├── download_dataset.py              # Kaggle dataset download utility (provided, DO NOT modify)
 ├── evaluate.py                      # Sample generation and FID evaluation (provided, DO NOT modify)
@@ -116,22 +116,22 @@ runs so that the same category always receives the same integer ID.
 
 Students implement two independent model classes in `model.py`:
 
-- `model_one_nfe`: model and `sample()` implementation for exactly one model
-function evaluation
-- `model_few_nfe`: model and `sample()` implementation for no more than four
-model function evaluations
+- `ModelOneNFE`: model and `sample()` implementation for exactly one model
+  function evaluation
+- `ModelFewNFE`: model and `sample()` implementation for no more than four
+  model function evaluations
 
 Each class may use a different architecture, objective, parameterization, and
 sampling procedure. The `sample()` method belongs inside the corresponding
 model class; no separate `sampling.py` module is required.
 
 ```python
-class model_one_nfe(Model):
+class ModelOneNFE(Model):
     def sample(self, shape, *, device="cuda", category=None, **kwargs):
         ...
 
 
-class model_few_nfe(Model):
+class ModelFewNFE(Model):
     def sample(self, shape, *, device="cuda", category=None, **kwargs):
         ...
 ```
@@ -202,21 +202,23 @@ write-up will result in a zero score.
 
 ### What You CANNOT Do
 
-- ❌ **Do NOT use pre-trained  models:** You must train both
-submitted models from scratch.
+- ❌ **Do NOT use pre-trained image-generation models:** You must train both
+  submitted models from scratch.
+- ❌ **Do NOT modify the base `Model` class:** Its checkpoint-loading and
+  parameter-counting utilities are fixed for consistent evaluation.
 - ❌ **Do NOT modify the provided dataset interface or evaluation script:**
-These files are provided to ensure consistent evaluation across submissions.
+  These files are provided to ensure consistent evaluation across submissions.
 - ❌ **Do NOT modify the provided train/val split files:**
-`data/train_split.txt` and `data/val_split.txt` are fixed for consistent
-data splitting.
-- ❌ **Do NOT install additional libraries separately:** Your code will be run
-in the TA environment with the provided dependencies only. If a specific
-library is essential, request it through the course communication channel.
+  `data/train_split.txt` and `data/val_split.txt` are fixed for consistent
+  data splitting.
+- ❌ **Do NOT install additional libraries separately:** Your code will run in
+  the TA environment with the provided dependencies only. If a specific
+  library is essential, request it through the course communication channel.
 
 ### What You CAN Do
 
-- ✅ **Modify `model.py`:** Implement `model_one_nfe`, `model_few_nfe`, their
-model architectures, objectives, and `sample()` methods.
+- ✅ **Modify `model.py`:** Implement `ModelOneNFE`, `ModelFewNFE`, their
+  model architectures, objectives, and `sample()` methods.
 - ✅ **Add your own Training Script:** Add training logic, optimizers, learning-rate schedulers, model-specific arguments, and checkpoint-saving code.
 - ✅ **Create new files:** Add any additional implementation files required by
 your models or training procedure. Include every such file in the submission.
@@ -228,10 +230,10 @@ and properly cited in your write-up.
 The performance of the two submitted model implementations will be evaluated
 quantitatively using FID scores:
 
-- `evaluate_mode=one_nfe`: evaluates `model_one_nfe` with exactly one model
-function evaluation
-- `evaluate_mode=few_nfe`: evaluates `model_few_nfe` with no more than four
-model function evaluations
+- `evaluate_mode=one_nfe`: evaluates `ModelOneNFE` with exactly one model
+  function evaluation
+- `evaluate_mode=few_nfe`: evaluates `ModelFewNFE` with no more than four
+  model function evaluations
 
 ### Evaluation Procedure
 
@@ -258,8 +260,8 @@ python evaluate.py \
 
 The evaluation script:
 
-1. Instantiates `model_one_nfe` or `model_few_nfe` through
-Model.load_checkpoint()`.
+1. Instantiates `ModelOneNFE` or `ModelFewNFE` through
+   `Model.load_checkpoint()`.
 2. Counts all model parameters and stops if the total exceeds 60M.
 3. Creates a balanced evaluation set with 20 samples for each of the 151
 ategories, producing 3,020 images for the selected model.
@@ -302,8 +304,7 @@ The purpose of the mid-term evaluation is to give all students a reference point
 
 ```text
 team_{team-id:0>2}/            # e.g. team_02
-├── model.py                   # model_one_nfe, model_few_nfe, and Model
-├── train.py                   # Student training script
+├── model.py                   # ModelOneNFE, ModelFewNFE, and Model
 ├── dataset.py                 # Provided dataset/DataLoader interface
 ├── download_dataset.py        # Provided dataset downloader
 ├── evaluate.py                # Provided evaluation entry point
@@ -356,7 +357,7 @@ will be ignored, which may lead to missing required items
 
 ```text
 team_{team-id:0>2}/            # e.g. team_02
-├── model.py                   # model_one_nfe, model_few_nfe, and Model
+├── model.py                   # ModelOneNFE, ModelFewNFE, and Model
 ├── train.py                   # Student training script
 ├── dataset.py                 # Provided dataset/DataLoader interface
 ├── download_dataset.py        # Provided dataset downloader
@@ -391,8 +392,8 @@ Before submitting, verify:
 both checkpoints without errors
 - ✅ **Checkpoint compatibility:** `Model.load_checkpoint()` successfully loads
 both `one_nfe.ckpt` and `few_nfe.ckpt`
-- ✅ **NFE budgets tested:** `model_one_nfe` uses exactly one model function
-evaluation and `model_few_nfe` uses no more than four
+- ✅ **NFE budgets tested:** `ModelOneNFE` uses exactly one model function
+  evaluation and `ModelFewNFE` uses no more than four
 - ✅ **All required files included:** Source code, both checkpoints, and the
 final write-up are included
 - ✅ **Citations ready:** All external code, papers, models, and datasets are

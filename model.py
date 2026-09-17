@@ -48,8 +48,8 @@ class Model(nn.Module):
     ) -> "Model":
         """Instantiate the selected model class and load its checkpoint."""
         model_classes = {
-            "one_nfe": model_one_nfe,
-            "few_nfe": model_few_nfe,
+            "one_nfe": ModelOneNFE,
+            "few_nfe": ModelFewNFE,
         }
         try:
             model_class = model_classes[evaluate_mode]
@@ -73,8 +73,8 @@ class Model(nn.Module):
 
 
 
-class model_one_nfe(Model):
-    """TODO: Student model evaluated with exactly one model function evaluation."""
+class ModelOneNFE(Model):
+    """Student model evaluated with exactly one model function evaluation."""
 
     def __init__(self, device="cpu", **kwargs):
         raise NotImplementedError("Implement the one-NFE model constructor.")
@@ -87,11 +87,11 @@ class model_one_nfe(Model):
         category: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
-        raise NotImplementedError("Implement sample() in model_one_nfe.")
+        raise NotImplementedError("Implement sample() in ModelOneNFE.")
 
 
-class model_few_nfe(Model):
-    """TODO: Student model evaluated with no more than four model evaluations."""
+class ModelFewNFE(Model):
+    """Student model evaluated with no more than four model evaluations."""
 
     def __init__(self, device="cpu", **kwargs):
         raise NotImplementedError("Implement the few-NFE model constructor.")
@@ -103,4 +103,4 @@ class model_few_nfe(Model):
         category: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
-        raise NotImplementedError("Implement sample() in model_few_nfe.")
+        raise NotImplementedError("Implement sample() in ModelFewNFE.")
