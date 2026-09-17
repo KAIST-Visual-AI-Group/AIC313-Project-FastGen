@@ -1,0 +1,6 @@
+kagglehub
+Pillow
+torch
+torchvision
+clean-fid
+tqdm
