@@ -10,7 +10,7 @@ from tqdm import tqdm
 from dataset import PokemonDataModule
 from model import Model
 
-MAX_MODEL_PARAMETERS = 60_000_000
+MAX_MODEL_PARAMETERS = 100_000_000
 SAMPLES_PER_CATEGORY = 20
 
 
@@ -115,7 +115,7 @@ def main(args):
     print(f"Model parameters: {parameter_count:,}")
     if parameter_count > MAX_MODEL_PARAMETERS:
         print(
-            "WARNING: model has more than 60,000,000 parameters. "
+            f"WARNING: model has more than {MAX_MODEL_PARAMETERS:,} parameters. "
             "Evaluation stopped."
         )
         raise SystemExit(1)

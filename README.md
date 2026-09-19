@@ -160,14 +160,23 @@ from src.utils import count_parameters, parameter_summary
 ```
 
 The evaluation script loads the selected model and counts all model parameters
-before generating samples. Models with more than 60,000,000 parameters are
+before generating samples. Each submitted model is limited to
+**100,000,000 parameters**, counted per model: `ModelOneNFE` and
+`ModelFewNFE` each get their own 100M budget. Models above the limit are
 rejected:
 
 ```text
-WARNING: model has more than 60,000,000 parameters. Evaluation stopped.
+WARNING: model has more than 100,000,000 parameters. Evaluation stopped.
 ```
 
-This check includes frozen parameters.
+This check includes frozen parameters, buffers excluded. It covers every
+module registered on the model, so auxiliary networks (EMA copies, teacher
+models, discriminators, encoders) count toward the same budget unless they are
+dropped from the submitted checkpoint.
+
+- ⚠️ Each model parameter size should not exceed 100M.
+- ⚠️ A model that exceeds the limit is not evaluated and scores zero for that
+  NFE mode; the other mode is scored independently.
 
 ## Training
 
@@ -263,7 +272,7 @@ The evaluation script:
 
 1. Instantiates `ModelOneNFE` or `ModelFewNFE` through
    `Model.load_checkpoint()`.
-2. Counts all model parameters and stops if the total exceeds 60M.
+2. Counts all model parameters and stops if the total exceeds 100M.
 3. Creates a balanced evaluation set with 20 samples for each of the 151
 ategories, producing 3,020 images for the selected model.
 4. Calls the selected model's `sample()` method.
@@ -284,7 +293,7 @@ results/evaluation/
 The reference set is created from `val_split.txt` and contains 3,020 images.
 FID is calculated over the complete generated and reference directories.
 
-**TA reference scores:** 1-NFE: **39.15** · Few-NFE: **30.90**
+- **TA reference scores:** 1-NFE: **39.15** · Few-NFE: **30.90**
 
 ## Submissions
 
@@ -432,6 +441,7 @@ zero score
 - [Progressive Distillation for Fast Sampling of Diffusion Models](https://arxiv.org/abs/2202.00512) — Salimans and Ho, ICLR 2022
 - [Learning to Discretize Denoising Diffusion ODEs](https://arxiv.org/abs/2405.15506) — Tong et al., ICLR 2025
 - [BézierFlow: Learning Bézier Stochastic Interpolant Schedulers for Few-Step Generation](https://arxiv.org/abs/2512.13255) — Min et al., ICLR 2026
+- [One-step Diffusion with Distribution Matching Distillation](https://arxiv.org/abs/2311.18828) — Yin et al., CVPR 2024
 
 ## Dataset Citation
 
