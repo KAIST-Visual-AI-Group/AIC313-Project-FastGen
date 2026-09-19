@@ -1,7 +1,7 @@
 # FastGen: Fast Image Generation Challenge
 
-**Mid Evaluation Submission Due:** November 2 (Sunday) 23:59 KST  
-**Final Submission Due:** November 15 (Saturday) 23:59 KST  
+**Mid Evaluation Submission Due:** October 31  
+**Final Submission Due:** November 7  
 **Where to Submit:** KLMS
 
 ## Overview
@@ -25,6 +25,7 @@ models and their `sample()` methods inside `model.py`.
 - `ModelFewNFE`: at most four model function evaluations
 
 Each category is evaluated with exactly 20 generated images.
+
 
 ## Environment Setup
 
@@ -282,6 +283,8 @@ results/evaluation/
 
 The reference set is created from `val_split.txt` and contains 3,020 images.
 FID is calculated over the complete generated and reference directories.
+
+**TA reference scores:** 1-NFE: **39.15** · Few-NFE: **30.90**
 
 ## Submissions
 
