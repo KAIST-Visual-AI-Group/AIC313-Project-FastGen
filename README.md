@@ -1,7 +1,7 @@
 # FastGen: Fast Image Generation Challenge
 
-**Mid Evaluation Submission Due:** October 31  
-**Final Submission Due:** November 7  
+**Mid Evaluation Submission Due:** October 31 (Saturday) 23:59 KST  
+**Final Submission Due:** November 7 (Saturday) 23:59 KST  
 **Where to Submit:** KLMS
 
 ## Overview
@@ -59,6 +59,13 @@ AIC313-Project-FastGen/
 ```
 
 ## Dataset and DataLoader
+
+Many source images are RGBA or palette images with transparency. At download
+time, `download_dataset.py` composites every transparent image onto a white
+background once, in place, and drops the alpha channel (a
+`.transparency_composited_on_white` marker file records that this step already
+ran). Training images, the FID reference set, and your generated samples
+therefore all share the same opaque white-background convention.
 
 The split manifests use the original paths from the Kaggle archive:
 
@@ -151,7 +158,26 @@ The selected model's `sample()` method is called directly during image
 generation. Each model must return a tensor shaped like `shape`, normalized
 consistently with the training data.
 
-### 2. Parameter limit
+### 2. NFE budget
+
+`ModelOneNFE.sample()` must use **exactly one** network evaluation and
+`ModelFewNFE.sample()` **at most four**.
+
+**Any execution of any part of the trained model backbone counts as one NFE.**
+For example:
+
+- a classifier-free-guidance pair (conditional plus unconditional forward pass)
+  costs 2 NFEs per step, so a guided sampler fits at most two steps in the
+  few-NFE budget
+- a partial forward through a subset of the backbone blocks costs 1 NFE
+- an extra head, decoder, or auxiliary network trained with the model costs
+  1 NFE per execution
+
+Operations that do not execute a trained network are free: noise sampling,
+interpolation between tensors, noise schedules, and arithmetic on
+intermediate results.
+
+### 3. Parameter limit
 
 Parameter counting is centralized in `src/utils.py`:
 
@@ -219,8 +245,16 @@ write-up will result in a zero score.
 - ❌ **Do NOT modify the provided dataset interface or evaluation script:**
   These files are provided to ensure consistent evaluation across submissions.
 - ❌ **Do NOT modify the provided train/val split files:**
-  `data/train_split.txt` and `data/val_split.txt` are fixed for consistent
+  `data/pokemon-generation-one-22k/train_split.txt` and
+  `data/pokemon-generation-one-22k/val_split.txt` are fixed for consistent
   data splitting.
+- ❌ **Do NOT train on the validation split:** Only the images listed in
+  `train_split.txt` may be used for training, distillation, or hyper-parameter
+  selection. The validation split is the FID reference set.
+- ❌ **Do NOT exceed 20 GB of peak training VRAM:** Each model must train
+  within a single 20 GB GPU, matching the NVIDIA A100 vGPU provided through
+  KCLOUD for this course. Measure peak memory
+  (`torch.cuda.max_memory_allocated()`) and keep it below the limit.
 - ❌ **Do NOT install additional libraries separately:** Your code will run in
   the TA environment with the provided dependencies only. If a specific
   library is essential, request it through the course communication channel.
@@ -274,7 +308,7 @@ The evaluation script:
    `Model.load_checkpoint()`.
 2. Counts all model parameters and stops if the total exceeds 100M.
 3. Creates a balanced evaluation set with 20 samples for each of the 151
-ategories, producing 3,020 images for the selected model.
+categories, producing 3,020 images for the selected model.
 4. Calls the selected model's `sample()` method.
 5. Computes FID against the complete validation reference set.
 
@@ -299,7 +333,7 @@ FID is calculated over the complete generated and reference directories.
 
 ### Mid-Term Evaluation (Optional)
 
-The purpose of the mid-term evaluation is to give all students a reference point for how other teams are progressing. **Participation is optional**, but the top-k team at each NFE in the mid-term evaluation that also outperforms the TAs’ FID scores will receive **bonus credit** toward the final grade. TA's FID score will updated after the Mid-Term evaluation submission date.
+The purpose of the mid-term evaluation is to give all students a reference point for how other teams are progressing. **Participation is optional.** At each NFE setting, the **top-1 team** whose score also outperforms the TAs’ FID score receives **bonus credit (+0.5)** toward the final grade. The TAs’ FID scores will be updated after the mid-term evaluation submission date.
 
 
 
@@ -413,10 +447,20 @@ properly cited in the write-up
 
 ## Grading
 
-- **Quantitative Evaluation:** FID scores for the one-NFE and few-NFE models,
-officially computed by the TAs
-- **Leaderboard Performance:** Top performers receive bonus credit
-- **Write-up:** Clear technical explanation and proper citations
+- **Total:** up to **20 points** from the FastGen project — **10 points for
+one-NFE** and **10 points for few-NFE**
+- **Quantitative evaluation:** FID scores for the one-NFE and few-NFE models,
+officially computed by the TAs. For each NFE setting, points are assigned
+relative to the best score achieved in the class
+- **Write-up:** Clear technical explanation and proper citations; each missing
+required item costs a 10% penalty
+- **Bonus points (mid-term evaluation):** top-1 team per NFE setting that beats
+the TA baseline receives **+0.5**
+- **Bonus points (final evaluation):** per NFE setting, **1st: +1.0** and
+**2nd / 3rd: +0.5 each**
+- ⚠️ Teams that receive final-evaluation bonus points **must present their work
+in class on November 16 (Monday)**; without the presentation the bonus points
+are not awarded
 
 ## Important
 
